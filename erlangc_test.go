@@ -9,13 +9,13 @@ func TestCalculateFte(t *testing.T) {
 	volume := 0.5
 	answer := int64(2)
 	num := GetNumberOfAgents(FteParams{
-		volume:             volume,
-		intervalLength:     900,
-		maxOccupancy:       0.8,
-		shrinkage:          0.2,
-		aht:                300,
-		targetServiceLevel: 0.8,
-		targetTime:         60,
+		Volume:             volume,
+		IntervalLength:     900,
+		MaxOccupancy:       0.8,
+		Shrinkage:          0.2,
+		Aht:                300,
+		TargetServiceLevel: 0.8,
+		TargetTime:         60,
 	})
 
 	if num != answer {
@@ -25,13 +25,13 @@ func TestCalculateFte(t *testing.T) {
 	volume = 1
 	answer = int64(3)
 	num = GetNumberOfAgents(FteParams{
-		volume:             volume,
-		intervalLength:     900,
-		maxOccupancy:       0.8,
-		shrinkage:          0.2,
-		aht:                300,
-		targetServiceLevel: 0.8,
-		targetTime:         60,
+		Volume:             volume,
+		IntervalLength:     900,
+		MaxOccupancy:       0.8,
+		Shrinkage:          0.2,
+		Aht:                300,
+		TargetServiceLevel: 0.8,
+		TargetTime:         60,
 	})
 
 	if num != answer {
@@ -41,13 +41,13 @@ func TestCalculateFte(t *testing.T) {
 	volume = 2
 	answer = int64(3)
 	num = GetNumberOfAgents(FteParams{
-		volume:             volume,
-		intervalLength:     900,
-		maxOccupancy:       0.8,
-		shrinkage:          0.2,
-		aht:                300,
-		targetServiceLevel: 0.8,
-		targetTime:         60,
+		Volume:             volume,
+		IntervalLength:     900,
+		MaxOccupancy:       0.8,
+		Shrinkage:          0.2,
+		Aht:                300,
+		TargetServiceLevel: 0.8,
+		TargetTime:         60,
 	})
 
 	if num != answer {
@@ -57,13 +57,13 @@ func TestCalculateFte(t *testing.T) {
 	volume = 10
 	answer = int64(8)
 	num = GetNumberOfAgents(FteParams{
-		volume:             volume,
-		intervalLength:     900,
-		maxOccupancy:       0.8,
-		shrinkage:          0.2,
-		aht:                300,
-		targetServiceLevel: 0.8,
-		targetTime:         60,
+		Volume:             volume,
+		IntervalLength:     900,
+		MaxOccupancy:       0.8,
+		Shrinkage:          0.2,
+		Aht:                300,
+		TargetServiceLevel: 0.8,
+		TargetTime:         60,
 	})
 
 	if num != answer {
@@ -73,13 +73,13 @@ func TestCalculateFte(t *testing.T) {
 	volume = 50
 	answer = int64(27)
 	num = GetNumberOfAgents(FteParams{
-		volume:             volume,
-		intervalLength:     900,
-		maxOccupancy:       0.8,
-		shrinkage:          0.2,
-		aht:                300,
-		targetServiceLevel: 0.8,
-		targetTime:         60,
+		Volume:             volume,
+		IntervalLength:     900,
+		MaxOccupancy:       0.8,
+		Shrinkage:          0.2,
+		Aht:                300,
+		TargetServiceLevel: 0.8,
+		TargetTime:         60,
 	})
 
 	if num != answer {
@@ -89,13 +89,13 @@ func TestCalculateFte(t *testing.T) {
 	volume = 100
 	answer = int64(53)
 	num = GetNumberOfAgents(FteParams{
-		volume:             volume,
-		intervalLength:     900,
-		maxOccupancy:       0.8,
-		shrinkage:          0.2,
-		aht:                300,
-		targetServiceLevel: 0.8,
-		targetTime:         60,
+		Volume:             volume,
+		IntervalLength:     900,
+		MaxOccupancy:       0.8,
+		Shrinkage:          0.2,
+		Aht:                300,
+		TargetServiceLevel: 0.8,
+		TargetTime:         60,
 	})
 
 	if num != answer {
@@ -105,13 +105,13 @@ func TestCalculateFte(t *testing.T) {
 	volume = 200
 	answer = int64(105)
 	num = GetNumberOfAgents(FteParams{
-		volume:             volume,
-		intervalLength:     900,
-		maxOccupancy:       0.8,
-		shrinkage:          0.2,
-		aht:                300,
-		targetServiceLevel: 0.8,
-		targetTime:         60,
+		Volume:             volume,
+		IntervalLength:     900,
+		MaxOccupancy:       0.8,
+		Shrinkage:          0.2,
+		Aht:                300,
+		TargetServiceLevel: 0.8,
+		TargetTime:         60,
 	})
 
 	if num != answer {
@@ -121,13 +121,13 @@ func TestCalculateFte(t *testing.T) {
 	volume = 500
 	answer = int64(262)
 	num = GetNumberOfAgents(FteParams{
-		volume:             volume,
-		intervalLength:     900,
-		maxOccupancy:       0.8,
-		shrinkage:          0.2,
-		aht:                300,
-		targetServiceLevel: 0.8,
-		targetTime:         60,
+		Volume:             volume,
+		IntervalLength:     900,
+		MaxOccupancy:       0.8,
+		Shrinkage:          0.2,
+		Aht:                300,
+		TargetServiceLevel: 0.8,
+		TargetTime:         60,
 	})
 
 	if num != answer {

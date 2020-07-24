@@ -111,22 +111,22 @@ func checkMaxOccupancy(intensity *big.Float, agents *big.Float, maxOccupancy *bi
 
 // FteParams - parameters to calculate FTE
 type FteParams struct {
-	volume             float64
-	intervalLength     int64
-	aht                int64
-	targetServiceLevel float64
-	targetTime         int64
-	maxOccupancy       float64
-	shrinkage          float64
+	Volume             float64
+	IntervalLength     int64
+	Aht                int64
+	TargetServiceLevel float64
+	TargetTime         int64
+	MaxOccupancy       float64
+	Shrinkage          float64
 }
 
 func GetNumberOfAgents(fteParams FteParams) int64 {
-	volume := new(big.Float).SetFloat64(fteParams.volume)
-	intervalLength := new(big.Float).SetInt64(fteParams.intervalLength)
-	aht := new(big.Float).SetInt64(fteParams.aht)
-	targetServiceLevel := new(big.Float).SetFloat64(fteParams.targetServiceLevel)
-	targetTime := new(big.Float).SetInt64(fteParams.targetTime)
-	maxOccupancy := new(big.Float).SetFloat64(fteParams.maxOccupancy)
+	volume := new(big.Float).SetFloat64(fteParams.Volume)
+	intervalLength := new(big.Float).SetInt64(fteParams.IntervalLength)
+	aht := new(big.Float).SetInt64(fteParams.Aht)
+	targetServiceLevel := new(big.Float).SetFloat64(fteParams.TargetServiceLevel)
+	targetTime := new(big.Float).SetInt64(fteParams.TargetTime)
+	maxOccupancy := new(big.Float).SetFloat64(fteParams.MaxOccupancy)
 
 	intensity := getIntensity(volume, aht, intervalLength)
 	intensityRounded, _ := new(big.Float).Add(intensity, new(big.Float).SetFloat64(0.5)).Int(nil)
@@ -137,13 +137,13 @@ func GetNumberOfAgents(fteParams FteParams) int64 {
 		agents.Add(agents, big.NewFloat(1.0))
 	}
 
-	if fteParams.maxOccupancy > 0 {
+	if fteParams.MaxOccupancy > 0 {
 		agents = checkMaxOccupancy(intensity, agents, maxOccupancy)
 	}
 
 	agentsInt, _ := new(big.Float).Add(agents, new(big.Float).SetFloat64(0.5)).Int64()
 
-	agentsInt = int64(math.Ceil(float64(agentsInt) / (1 - fteParams.shrinkage)))
+	agentsInt = int64(math.Ceil(float64(agentsInt) / (1 - fteParams.Shrinkage)))
 
 	return agentsInt
 }
