@@ -1,7 +1,6 @@
 package erlangc
 
 import (
-	"fmt"
 	"math"
 	"math/big"
 	"sync"
@@ -56,7 +55,6 @@ func getY(intensity *big.Float, agents *big.Float) *big.Float {
 
 func getPW(X *big.Float, Y *big.Float) *big.Float {
 	YX := Y.Add(Y, X)
-	fmt.Println("getPW", YX, Y, X)
 	return X.Quo(X, YX)
 }
 
@@ -122,7 +120,7 @@ type FteParams struct {
 	shrinkage          float64
 }
 
-func getNumberOfAgents(fteParams FteParams) int64 {
+func GetNumberOfAgents(fteParams FteParams) int64 {
 	volume := new(big.Float).SetFloat64(fteParams.volume)
 	intervalLength := new(big.Float).SetInt64(fteParams.intervalLength)
 	aht := new(big.Float).SetInt64(fteParams.aht)
@@ -133,6 +131,8 @@ func getNumberOfAgents(fteParams FteParams) int64 {
 	intensity := getIntensity(volume, aht, intervalLength)
 	intensityRounded, _ := new(big.Float).Add(intensity, new(big.Float).SetFloat64(0.5)).Int(nil)
 	agents := new(big.Float).SetInt(intensityRounded)
+	agents = agents.Add(agents, new(big.Float).SetInt64(1))
+
 	for getFullServiceLevel(intensity, agents, targetTime, aht).Cmp(targetServiceLevel) == -1 {
 		agents.Add(agents, big.NewFloat(1.0))
 	}
@@ -149,7 +149,7 @@ func getNumberOfAgents(fteParams FteParams) int64 {
 }
 
 func getNumberOfAgentsParallel(fteParams FteParams, fteChan chan int64, wg *sync.WaitGroup) {
-	agents := getNumberOfAgents(fteParams)
+	agents := GetNumberOfAgents(fteParams)
 	fteChan <- agents
 	wg.Done()
 }
@@ -181,20 +181,3 @@ func CalculateFte(params []FteParams) []int64 {
 
 	return fte
 }
-
-// func main() {
-// 	start := time.Now()
-
-// 	num := CalculateFte([]FteParams{{
-// 		volume:             500,
-// 		intervalLength:     900,
-// 		maxOccupancy:       0.8,
-// 		shrinkage:          0.2,
-// 		aht:                300,
-// 		targetServiceLevel: 0.8,
-// 		targetTime:         60,
-// 	}})
-// 	fmt.Println(time.Since(start))
-
-// 	fmt.Println(num)
-// }
