@@ -111,6 +111,8 @@ func checkMaxOccupancy(intensity *big.Float, agents *big.Float, maxOccupancy *bi
 
 // FteParams - parameters to calculate FTE
 type FteParams struct {
+	ID                 string
+	Index              int64
 	Volume             float64
 	IntervalLength     int64
 	Aht                int64
@@ -120,7 +122,13 @@ type FteParams struct {
 	Shrinkage          float64
 }
 
-func GetNumberOfAgents(fteParams FteParams) int64 {
+type FteResult struct {
+	ID     string
+	Index  int64
+	Volume int64
+}
+
+func GetNumberOfAgents(fteParams FteParams) FteResult {
 	volume := new(big.Float).SetFloat64(fteParams.Volume)
 	intervalLength := new(big.Float).SetInt64(fteParams.IntervalLength)
 	aht := new(big.Float).SetInt64(fteParams.Aht)
@@ -145,10 +153,14 @@ func GetNumberOfAgents(fteParams FteParams) int64 {
 
 	agentsInt = int64(math.Ceil(float64(agentsInt) / (1 - fteParams.Shrinkage)))
 
-	return agentsInt
+	return FteResult{
+		ID:     fteParams.ID,
+		Index:  fteParams.Index,
+		Volume: agentsInt,
+	}
 }
 
-func getNumberOfAgentsParallel(fteParams FteParams, fteChan chan int64, wg *sync.WaitGroup) {
+func getNumberOfAgentsParallel(fteParams FteParams, fteChan chan FteResult, wg *sync.WaitGroup) {
 	agents := GetNumberOfAgents(fteParams)
 	fteChan <- agents
 	wg.Done()
@@ -163,9 +175,9 @@ func getNumberOfAgentsParallel(fteParams FteParams, fteChan chan int64, wg *sync
 // targetTime - target answer time, acceptable wait time in seconds
 // maxOccupancy - maximum occupancy rate (0 <= maxOccupancy <= 1)
 // shrinkage - shrinkage rate (0 <= shrinkage < 1)
-func CalculateFte(params []FteParams) []int64 {
-	var fte []int64
-	fteChan := make(chan int64, len(params))
+func CalculateFte(params []FteParams) []FteResult {
+	var fte []FteResult
+	fteChan := make(chan FteResult, len(params))
 	wg := sync.WaitGroup{}
 	for _, param := range params {
 		wg.Add(1)
