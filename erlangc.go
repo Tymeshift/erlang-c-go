@@ -102,7 +102,7 @@ func getFullServiceLevel(intensity *big.Float, agents *big.Float, targetTime *bi
 
 func checkMaxOccupancy(intensity *big.Float, agents *big.Float, maxOccupancy *big.Float) *big.Float {
 	occupancy := bigDiv(intensity, agents)
-	for occupancy.Cmp(maxOccupancy) == 1 {
+	for occupancy.Cmp(maxOccupancy) == 0 || occupancy.Cmp(maxOccupancy) == 1 {
 		agents.Add(agents, big.NewFloat(1.0))
 		occupancy = bigDiv(intensity, agents)
 	}

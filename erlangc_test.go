@@ -5,6 +5,7 @@ import (
 )
 
 func TestCalculateFte(t *testing.T) {
+
 	volume := 0.5
 	answer := int64(2)
 	num := GetNumberOfAgents(FteParams{
@@ -13,6 +14,24 @@ func TestCalculateFte(t *testing.T) {
 		Volume:             volume,
 		IntervalLength:     900,
 		MaxOccupancy:       0.8,
+		Shrinkage:          0.2,
+		Aht:                300,
+		TargetServiceLevel: 0.8,
+		TargetTime:         60,
+	})
+
+	if num.Volume != answer {
+		t.Errorf("CalculateFte with %f volume = %d; want %d", volume, num.Volume, answer)
+	}
+
+	volume = 1
+	answer = int64(3)
+	num = GetNumberOfAgents(FteParams{
+		ID:                 "1",
+		Index:              0,
+		Volume:             volume,
+		IntervalLength:     900,
+		MaxOccupancy:       1,
 		Shrinkage:          0.2,
 		Aht:                300,
 		TargetServiceLevel: 0.8,
