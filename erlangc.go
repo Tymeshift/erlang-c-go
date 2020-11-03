@@ -151,6 +151,9 @@ func GetNumberOfAgents(fteParams FteParams) FteResult {
 
 	agentsInt, _ := new(big.Float).Add(agents, new(big.Float).SetFloat64(0.5)).Int64()
 
+	if fteParams.Shrinkage == 1 {
+		fteParams.Shrinkage = 0.99999
+	}
 	agentsInt = int64(math.Ceil(float64(agentsInt) / (1 - fteParams.Shrinkage)))
 
 	return FteResult{
