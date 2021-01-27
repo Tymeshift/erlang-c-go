@@ -129,6 +129,13 @@ type FteResult struct {
 }
 
 func GetNumberOfAgents(fteParams FteParams) FteResult {
+	if fteParams.Volume < 0 || fteParams.Aht < 0 {
+		return FteResult{
+			ID:     fteParams.ID,
+			Index:  fteParams.Index,
+			Volume: 2,
+		}
+	}
 	volume := new(big.Float).SetFloat64(fteParams.Volume)
 	intervalLength := new(big.Float).SetInt64(fteParams.IntervalLength)
 	aht := new(big.Float).SetInt64(fteParams.Aht)
