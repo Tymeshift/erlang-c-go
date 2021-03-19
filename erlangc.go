@@ -9,6 +9,8 @@ import (
 	"github.com/Tymeshift/erlang-c-go/factorial"
 )
 
+var factorailCache map[int64]*big.Int = make(map[int64]*big.Int)
+
 func bigMul(x *big.Float, y *big.Float) *big.Float {
 	return new(big.Float).Mul(x, y)
 }
@@ -32,7 +34,12 @@ func getFactorial(n int64) *big.Float {
 }
 
 func getFactorialSwing(n int64) *big.Float {
+	cache, ok := factorailCache[n]
+	if ok {
+		return new(big.Float).SetInt(cache)
+	}
 	fact := factorial.Factorial(uint64(n))
+	factorailCache[n] = fact
 	return new(big.Float).SetInt(fact)
 }
 
