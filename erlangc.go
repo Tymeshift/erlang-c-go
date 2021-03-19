@@ -199,6 +199,24 @@ func getNumberOfAgentsParallel(fteParams FteParams, fteChan chan FteResult, wg *
 // maxOccupancy - maximum occupancy rate (0 <= maxOccupancy <= 1)
 // shrinkage - shrinkage rate (0 <= shrinkage < 1)
 func CalculateFte(params []FteParams) []FteResult {
+	fte := make([]FteResult, len(params))
+	for i, param := range params {
+		fte[i] = GetNumberOfAgents(param)
+	}
+
+	return fte
+}
+
+// CalculateFteParallel calculats number of agents needed for a specific service level to handle incoming volume of arrivals per time interval
+//
+// volume - incoming number of arrivals per time interval
+// intervalLength - time interval in seconds
+// aht - average handle time in seconds
+// targetServiceLevel - service level goal, the percentage of calls answered within the acceptable waiting time (0 <= targetServiceLevel < 1)
+// targetTime - target answer time, acceptable wait time in seconds
+// maxOccupancy - maximum occupancy rate (0 <= maxOccupancy <= 1)
+// shrinkage - shrinkage rate (0 <= shrinkage < 1)
+func CalculateFteParallel(params []FteParams) []FteResult {
 	var fte []FteResult
 	fteChan := make(chan FteResult, len(params))
 	wg := sync.WaitGroup{}
