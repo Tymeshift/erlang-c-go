@@ -6,6 +6,7 @@ import (
 	"sync"
 
 	"github.com/ALTree/bigfloat"
+	"github.com/Tymeshift/erlang-c-go/factorial"
 )
 
 func bigMul(x *big.Float, y *big.Float) *big.Float {
@@ -28,6 +29,11 @@ func getFactorial(n int64) *big.Float {
 	var fact big.Int
 	fact.MulRange(1, n)
 	return new(big.Float).SetInt(&fact)
+}
+
+func getFactorialSwing(n int64) *big.Float {
+	fact := factorial.SwingingFactorial(uint64(n))
+	return new(big.Float).SetInt(fact)
 }
 
 func getIntensity(volume *big.Float, aht *big.Float, intervalLength *big.Float) *big.Float {
