@@ -32,7 +32,7 @@ func getFactorial(n int64) *big.Float {
 }
 
 func getFactorialSwing(n int64) *big.Float {
-	fact := factorial.SwingingFactorial(uint64(n))
+	fact := factorial.Factorial(uint64(n))
 	return new(big.Float).SetInt(fact)
 }
 
@@ -52,7 +52,7 @@ func getY(intensity *big.Float, agents *big.Float) *big.Float {
 	sum := big.NewFloat(0)
 	n, _ := agents.Int64()
 	for i := int64(0); i < n; i++ {
-		iFact := getFactorial(i)
+		iFact := getFactorialSwing(i)
 		aPowI := bigfloat.Pow(intensity, new(big.Float).SetInt64(i))
 		sum = bigAdd(sum, bigDiv(aPowI, iFact))
 	}
@@ -93,7 +93,7 @@ func getServiceLevel(
 
 func getFullServiceLevel(intensity *big.Float, agents *big.Float, targetTime *big.Float, aht *big.Float) *big.Float {
 	n, _ := agents.Int64()
-	factorial := getFactorial(n)
+	factorial := getFactorialSwing(n)
 	AN := getAN(intensity, agents)
 	erlangC := getErlangC(AN, factorial, intensity, agents)
 	serviceLevel := getServiceLevel(

@@ -6,7 +6,6 @@
 package factorial
 
 import (
-	"fmt"
 	"math/big"
 
 	"github.com/Tymeshift/erlang-c-go/primes"
@@ -40,7 +39,6 @@ func SwingingFactorial(n uint64) *big.Int {
 	}
 
 	r := s.OddSwing(n)
-	fmt.Println("n", n, r)
 	return r.Lsh(r, xmath.BitCount64(n>>1))
 }
 
