@@ -65,7 +65,25 @@ func BenchmarkGetFactorial(b *testing.B) {
 	}
 }
 
-func BenchmarkGetFactorialSwing(b *testing.B) {
+func BenchmarkGetFactorialSwing10(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		getFactorialSwing(10)
+	}
+}
+
+func BenchmarkGetFactorialSwing100(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		getFactorialSwing(100)
+	}
+}
+
+func BenchmarkGetFactorialSwing1000(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		getFactorialSwing(1000)
+	}
+}
+
+func BenchmarkGetFactorialSwing10000(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		getFactorialSwing(10000)
 	}
