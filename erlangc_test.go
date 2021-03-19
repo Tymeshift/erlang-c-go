@@ -17,6 +17,60 @@ func TestIntensity(t *testing.T) {
 	}
 }
 
+func TestGetFactorial(t *testing.T) {
+	res := getFactorial(5)
+	expected := big.NewFloat(float64(120))
+	if res.Cmp(expected) != 0 {
+		t.Errorf("factorial result should be %f, got %f", expected, res)
+	}
+
+	res = getFactorial(20)
+	expected = big.NewFloat(float64(2432902008176640000))
+	if res.Cmp(expected) != 0 {
+		t.Errorf("factorial result should be %f, got %f", expected, res)
+	}
+
+	res = getFactorial(80)
+	expectedStr := "71569457046263802294811533723186532165584657342365752577109445058227039255480148842668944867280814080000000000000000000.000000"
+	expected, _, _ = big.ParseFloat(expectedStr, 10, 1024, big.ToNearestEven)
+	if res.Cmp(expected) != 0 {
+		t.Errorf("factorial result should be %f, got %f", expected, res)
+	}
+}
+
+func TestGetFactorialSwing(t *testing.T) {
+	res := getFactorialSwing(5)
+	expected := big.NewFloat(float64(120))
+	if res.Cmp(expected) != 0 {
+		t.Errorf("factorial result should be %f, got %f", expected, res)
+	}
+
+	res = getFactorialSwing(20)
+	expected = big.NewFloat(float64(2432902008176640000))
+	if res.Cmp(expected) != 0 {
+		t.Errorf("factorial result should be %f, got %f", expected, res)
+	}
+
+	res = getFactorialSwing(80)
+	expectedStr := "71569457046263802294811533723186532165584657342365752577109445058227039255480148842668944867280814080000000000000000000.000000"
+	expected, _, _ = big.ParseFloat(expectedStr, 10, 1024, big.ToNearestEven)
+	if res.Cmp(expected) != 0 {
+		t.Errorf("factorial result should be %f, got %f", expected, res)
+	}
+}
+
+func BenchmarkGetFactorial(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		getFactorial(10000)
+	}
+}
+
+func BenchmarkGetFactorialSwing(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		getFactorialSwing(10000)
+	}
+}
+
 func TestCalculateFte(t *testing.T) {
 
 	volume := 0.5
@@ -165,6 +219,24 @@ func TestCalculateFte(t *testing.T) {
 
 	volume = 500
 	answer = int64(262)
+	num = GetNumberOfAgents(FteParams{
+		ID:                 "1",
+		Index:              0,
+		Volume:             volume,
+		IntervalLength:     900,
+		MaxOccupancy:       0.8,
+		Shrinkage:          0.2,
+		Aht:                300,
+		TargetServiceLevel: 0.8,
+		TargetTime:         60,
+	})
+
+	if num.Volume != answer {
+		t.Errorf("CalculateFte with %f volume = %d; want %d", volume, num.Volume, answer)
+	}
+
+	volume = 5000
+	answer = int64(2605)
 	num = GetNumberOfAgents(FteParams{
 		ID:                 "1",
 		Index:              0,
