@@ -2,14 +2,14 @@ package erlangc
 
 import (
 	"encoding/json"
-	"fmt"
 	"io"
 	"log"
+	"math"
 	"os"
 	"runtime/pprof"
 	"testing"
 
-	big "github.com/ncw/gmp"
+	"math/big"
 )
 
 func TestIntensity(t *testing.T) {
@@ -18,16 +18,78 @@ func TestIntensity(t *testing.T) {
 	aht := int64(600)
 
 	intensity := getIntensity(volume, aht, intervalLength)
-	expected := 8.000000
+	expected := 8.004
 	if intensity != expected {
 		t.Errorf("intensity should be %f, got %f", expected, intensity)
 	}
 }
 
-func TestAN(t *testing.T) {
-	intensity := big.NewRat(1, 2)
-	res := getAN(intensity, big.NewInt(3))
-	t.Error(res)
+func TestGetAN(t *testing.T) {
+	res := getAN(new(big.Rat).SetFloat64(8.0), big.NewInt(10))
+	expected := new(big.Rat).SetFloat64(math.Pow(8, 10))
+	if res.Cmp(expected) != 0 {
+		t.Errorf("AN should be %s, got %s", expected, res)
+	}
+}
+
+func TestGetX(t *testing.T) {
+	an := math.Pow(8, 10)
+	fact := int64(3628800)
+	intensity := 8.0
+	agents := int64(10)
+	res := getX(new(big.Rat).SetFloat64(an), big.NewInt(fact), intensity, agents)
+	expected := 1479.4723
+	resF, _ := res.Float64()
+
+	if math.Round(resF*10000)/10000 != expected {
+		t.Errorf("X should be %f, got %f", expected, resF)
+	}
+}
+
+func TestGetY(t *testing.T) {
+	intensity := 8.0
+	agents := int64(10)
+	res := getY(new(big.Rat).SetFloat64(intensity), agents)
+	expected := 2136.2268
+	resF, _ := res.Float64()
+	if math.Round(resF*10000)/10000 != expected {
+		t.Errorf("Y should be %f, got %f", expected, resF)
+	}
+}
+
+func TestGetPW(t *testing.T) {
+	X := 1479.4723
+	Y := 2136.2268
+	res := getPW(new(big.Rat).SetFloat64(X), new(big.Rat).SetFloat64(Y))
+	expected := 0.40918
+	if math.Round(res*100000)/100000 != expected {
+		t.Errorf("PW should be %f, got %f", expected, res)
+	}
+}
+
+func TestGetErlangC(t *testing.T) {
+	an := math.Pow(8, 10)
+	fact := int64(3628800)
+	intensity := 8.0
+	agents := 10.0
+	res := getErlangC(new(big.Rat).SetFloat64(an), big.NewInt(fact), intensity, int64(agents))
+	expected := 0.40918
+	if math.Round(res*100000)/100000 != expected {
+		t.Errorf("erlang should be %f, got %f", expected, res)
+	}
+}
+
+func TestGetServiceLevel(t *testing.T) {
+	erlang := 0.4091801508
+	intensity := 8.0
+	agents := 10
+	targetTime := 1000
+	aht := 1500
+	res := getServiceLevel(erlang, intensity, int64(agents), int64(targetTime), int64(aht))
+	expected := 0.89214
+	if math.Round(res*100000)/100000 != expected {
+		t.Errorf("service level should be %f, got %f", expected, res)
+	}
 }
 
 func TestGetFactorial(t *testing.T) {
@@ -55,7 +117,6 @@ func TestGetFactorial(t *testing.T) {
 func TestGetFactorialSwing(t *testing.T) {
 	res := getFactorialSwing(5)
 	expected := big.NewInt(120)
-	t.Error(res)
 	if res.Cmp(expected) != 0 {
 		t.Errorf("factorial result should be %s, got %s", expected.String(), res.String())
 	}
@@ -122,10 +183,9 @@ func BenchmarkCaclulateFTE(b *testing.B) {
 	}
 	pprof.StartCPUProfile(f)
 	defer pprof.StopCPUProfile()
-
-	res := CalculateFte(params)
-	fmt.Println(res)
-	fmt.Println(len(res))
+	for i := 0; i < b.N; i++ {
+		CalculateFte(params)
+	}
 }
 
 func TestCalculateFte(t *testing.T) {

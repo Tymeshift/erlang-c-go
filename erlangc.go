@@ -1,10 +1,11 @@
 package erlangc
 
 import (
+	"fmt"
 	"math"
 	"sync"
 
-	big "github.com/ncw/gmp"
+	"math/big"
 
 	"github.com/Tymeshift/erlang-c-go/factorial"
 )
@@ -13,9 +14,9 @@ var factorailCache map[int64]*big.Int = make(map[int64]*big.Int)
 
 func ratioExp(x *big.Rat, y *big.Int) *big.Rat {
 	num := x.Num()
-	num = num.Exp(num, y, nil)
+	num = new(big.Int).Exp(num, y, nil)
 	denom := x.Denom()
-	denom = denom.Exp(denom, y, nil)
+	denom = new(big.Int).Exp(denom, y, nil)
 	return new(big.Rat).SetFrac(num, denom)
 }
 
@@ -31,8 +32,10 @@ func getFactorialSwing(n int64) *big.Int {
 		return cache
 	}
 	fact := factorial.Factorial(uint64(n))
-	factorailCache[n] = fact
-	return fact
+	factStr := fact.String()
+	factInt, _ := new(big.Int).SetString(factStr, 10)
+	factorailCache[n] = factInt
+	return factInt
 }
 
 func getIntensity(volume float64, aht int64, intervalLength int64) float64 {
@@ -54,27 +57,35 @@ func getY(intensity *big.Rat, agents int64) *big.Rat {
 	sum := new(big.Rat)
 	for i := int64(0); i < agents; i++ {
 		iFact := getFactorialSwing(i)
+		fmt.Println(iFact.Int64())
+		fmt.Println(intensity, i)
 		aPowI := ratioExp(intensity, big.NewInt(i))
 		div := new(big.Rat).Quo(aPowI, new(big.Rat).SetInt(iFact))
-		sum = new(big.Rat).Add(sum, div)
+		fmt.Println(aPowI.Float64())
+		fmt.Println(div.Float64())
+
+		sum = div.Add(sum, div)
 	}
 	return sum
 }
 
-func getPW(X *big.Rat, Y *big.Rat) *big.Rat {
+func getPW(X *big.Rat, Y *big.Rat) float64 {
 	YX := Y.Add(Y, X)
-	return X.Quo(X, YX)
+	res, _ := X.Quo(X, YX).Float64()
+	return res
 }
 
-func getErlangC(AN *big.Rat, factorial *big.Int, intensity float64, agents int64) *big.Rat {
+func getErlangC(AN *big.Rat, factorial *big.Int, intensity float64, agents int64) float64 {
 	X := getX(AN, factorial, intensity, agents)
 	Y := getY(new(big.Rat).SetFloat64(intensity), agents)
+	fmt.Println(X.Float64())
+	fmt.Println(Y.Float64())
 	PW := getPW(X, Y)
 	return PW
 }
 
 func getServiceLevel(
-	erlangC *big.Rat,
+	erlangC float64,
 	intensity float64,
 	agents int64,
 	targetTime int64,
@@ -83,13 +94,9 @@ func getServiceLevel(
 	targetTimeToAht := float64(targetTime) / float64(aht)
 	agentsSubInt := float64(agents) - intensity
 	expInput := float64(agentsSubInt) * targetTimeToAht * -1
-	exp := math.Round(math.Exp(expInput)*100) / 100
-	erlangCMul := erlangC.Mul(erlangC, new(big.Rat).SetFloat64(exp))
-	res, _ := erlangCMul.Float64()
-	return 1 - res
-	// return (
-	//   // 1 - erlangC.times(Math.exp(-(agents - intensity) * (targetTime / aht)))
-	// );
+	exp := math.Exp(expInput)
+	erlangCMul := erlangC * exp
+	return 1 - erlangCMul
 }
 
 func getFullServiceLevel(intensity float64, agents int64, targetTime int64, aht int64) float64 {
@@ -109,7 +116,7 @@ func getFullServiceLevel(intensity float64, agents int64, targetTime int64, aht 
 
 func checkMaxOccupancy(intensity float64, agents int64, maxOccupancy float64) int64 {
 	occupancy := intensity / float64(agents)
-	for maxOccupancy >= occupancy {
+	for occupancy >= maxOccupancy {
 		agents++
 		occupancy = intensity / float64(agents)
 	}
@@ -157,9 +164,9 @@ func GetNumberOfAgents(fteParams FteParams) FteResult {
 		agents++
 	}
 
-	// if fteParams.MaxOccupancy > 0 {
-	// 	agents = checkMaxOccupancy(intensity, agents, fteParams.MaxOccupancy)
-	// }
+	if fteParams.MaxOccupancy > 0 {
+		agents = checkMaxOccupancy(intensity, agents, fteParams.MaxOccupancy)
+	}
 
 	if fteParams.Shrinkage == 1 {
 		fteParams.Shrinkage = 0.99999

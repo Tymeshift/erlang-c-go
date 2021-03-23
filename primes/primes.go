@@ -6,7 +6,7 @@
 package primes
 
 import (
-	big "github.com/ncw/gmp"
+	"math/big"
 )
 
 // word size dependent constants

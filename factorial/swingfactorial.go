@@ -6,7 +6,7 @@
 package factorial
 
 import (
-	big "github.com/ncw/gmp"
+	"math/big"
 
 	"github.com/Tymeshift/erlang-c-go/primes"
 	"github.com/Tymeshift/erlang-c-go/xmath"

@@ -6,7 +6,7 @@
 package xmath
 
 import (
-	big "github.com/ncw/gmp"
+	"math/big"
 )
 
 const productSerialThreshold = 20
