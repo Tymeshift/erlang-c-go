@@ -9,7 +9,7 @@ import (
 	"runtime/pprof"
 	"testing"
 
-	"math/big"
+	big "github.com/ncw/gmp"
 )
 
 func TestIntensity(t *testing.T) {
@@ -18,7 +18,17 @@ func TestIntensity(t *testing.T) {
 	aht := int64(600)
 
 	intensity := getIntensity(volume, aht, intervalLength)
-	expected := 8.004
+	expected := 8.040000
+	if intensity != expected {
+		t.Errorf("intensity should be %f, got %f", expected, intensity)
+	}
+
+	volume = 3890.0
+	intervalLength = int64(900)
+	aht = int64(600)
+
+	intensity = getIntensity(volume, aht, intervalLength)
+	expected = 2606.300000
 	if intensity != expected {
 		t.Errorf("intensity should be %f, got %f", expected, intensity)
 	}
@@ -27,6 +37,14 @@ func TestIntensity(t *testing.T) {
 func TestGetAN(t *testing.T) {
 	res := getAN(new(big.Rat).SetFloat64(8.0), big.NewInt(10))
 	expected := new(big.Rat).SetFloat64(math.Pow(8, 10))
+	if res.Cmp(expected) != 0 {
+		t.Errorf("AN should be %s, got %s", expected, res)
+	}
+
+	res = getAN(new(big.Rat).SetFloat64(2606.300000), big.NewInt(2700))
+	pow := ratioExp(new(big.Rat).SetFloat64(2606.300000), big.NewInt(2700))
+	expected = pow
+	t.Error(pow.String())
 	if res.Cmp(expected) != 0 {
 		t.Errorf("AN should be %s, got %s", expected, res)
 	}
@@ -44,6 +62,13 @@ func TestGetX(t *testing.T) {
 	if math.Round(resF*10000)/10000 != expected {
 		t.Errorf("X should be %f, got %f", expected, resF)
 	}
+
+	intensity = 2606.300000
+	agents = int64(2700)
+	anBig := getAN(new(big.Rat).SetFloat64(intensity), big.NewInt(agents))
+	factBig := getFactorialSwing(agents)
+	res = getX(anBig, factBig, intensity, agents)
+	// have no idea how to test this, magnitude of the float is too large and the nun/denom is huge
 }
 
 func TestGetY(t *testing.T) {
@@ -55,6 +80,11 @@ func TestGetY(t *testing.T) {
 	if math.Round(resF*10000)/10000 != expected {
 		t.Errorf("Y should be %f, got %f", expected, resF)
 	}
+
+	intensity = 2606.300000
+	agents = int64(2700)
+	res = getY(new(big.Rat).SetFloat64(intensity), agents)
+	// have no idea how to test this, magnitude of the float is too large and the nun/denom is huge
 }
 
 func TestGetPW(t *testing.T) {
@@ -64,6 +94,32 @@ func TestGetPW(t *testing.T) {
 	expected := 0.40918
 	if math.Round(res*100000)/100000 != expected {
 		t.Errorf("PW should be %f, got %f", expected, res)
+	}
+
+	intensity := 2606.300000
+	agents := int64(2700)
+	anBig := getAN(new(big.Rat).SetFloat64(intensity), big.NewInt(agents))
+	factBig := getFactorialSwing(agents)
+
+	XBig := getX(anBig, factBig, intensity, agents)
+	YBig := getY(new(big.Rat).SetFloat64(intensity), agents)
+	res = getPW(XBig, YBig)
+	expected = 0.0415760
+	if math.Round(res*100000)/100000 != math.Round(expected*100000)/100000 {
+		t.Errorf("PW should be %f, got %f", expected, res)
+	}
+}
+
+func BenchmarkGetPW(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		intensity := 2606.300000
+		agents := int64(2700)
+		anBig := getAN(new(big.Rat).SetFloat64(intensity), big.NewInt(agents))
+		factBig := getFactorialSwing(agents)
+
+		XBig := getX(anBig, factBig, intensity, agents)
+		YBig := getY(new(big.Rat).SetFloat64(intensity), agents)
+		getPW(XBig, YBig)
 	}
 }
 

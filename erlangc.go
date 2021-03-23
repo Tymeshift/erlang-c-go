@@ -1,11 +1,10 @@
 package erlangc
 
 import (
-	"fmt"
 	"math"
 	"sync"
 
-	"math/big"
+	big "github.com/ncw/gmp"
 
 	"github.com/Tymeshift/erlang-c-go/factorial"
 )
@@ -57,13 +56,8 @@ func getY(intensity *big.Rat, agents int64) *big.Rat {
 	sum := new(big.Rat)
 	for i := int64(0); i < agents; i++ {
 		iFact := getFactorialSwing(i)
-		fmt.Println(iFact.Int64())
-		fmt.Println(intensity, i)
 		aPowI := ratioExp(intensity, big.NewInt(i))
 		div := new(big.Rat).Quo(aPowI, new(big.Rat).SetInt(iFact))
-		fmt.Println(aPowI.Float64())
-		fmt.Println(div.Float64())
-
 		sum = div.Add(sum, div)
 	}
 	return sum
@@ -78,8 +72,6 @@ func getPW(X *big.Rat, Y *big.Rat) float64 {
 func getErlangC(AN *big.Rat, factorial *big.Int, intensity float64, agents int64) float64 {
 	X := getX(AN, factorial, intensity, agents)
 	Y := getY(new(big.Rat).SetFloat64(intensity), agents)
-	fmt.Println(X.Float64())
-	fmt.Println(Y.Float64())
 	PW := getPW(X, Y)
 	return PW
 }
@@ -153,9 +145,6 @@ func GetNumberOfAgents(fteParams FteParams) FteResult {
 
 	intensity := math.Round(getIntensity(fteParams.Volume, fteParams.Aht, fteParams.IntervalLength)*100) / 100
 	agents := int64(math.Floor(intensity + 1))
-
-	// s := getFullServiceLevel(intensity, agents, fteParams.TargetTime, fteParams.Aht)
-	// fmt.Println(s)
 
 	s := 0.0
 
