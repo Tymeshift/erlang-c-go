@@ -2,106 +2,99 @@ package erlangc
 
 import (
 	"math"
-	"math/big"
 	"sync"
 
-	"github.com/ALTree/bigfloat"
+	big "github.com/ncw/gmp"
+
 	"github.com/Tymeshift/erlang-c-go/factorial"
 )
 
 var factorailCache map[int64]*big.Int = make(map[int64]*big.Int)
 
-func bigMul(x *big.Float, y *big.Float) *big.Float {
-	return new(big.Float).Mul(x, y)
+func ratioExp(x *big.Rat, y *big.Int) *big.Rat {
+	num := x.Num()
+	num = new(big.Int).Exp(num, y, nil)
+	denom := x.Denom()
+	denom = new(big.Int).Exp(denom, y, nil)
+	return new(big.Rat).SetFrac(num, denom)
 }
 
-func bigDiv(x *big.Float, y *big.Float) *big.Float {
-	return new(big.Float).Quo(x, y)
-}
-
-func bigAdd(x *big.Float, y *big.Float) *big.Float {
-	return new(big.Float).Add(x, y)
-}
-
-func bigSub(x *big.Float, y *big.Float) *big.Float {
-	return new(big.Float).Sub(x, y)
-}
-
-func getFactorial(n int64) *big.Float {
+func getFactorial(n int64) big.Int {
 	var fact big.Int
 	fact.MulRange(1, n)
-	return new(big.Float).SetInt(&fact)
+	return fact
 }
 
-func getFactorialSwing(n int64) *big.Float {
+func getFactorialSwing(n int64) *big.Int {
 	cache, ok := factorailCache[n]
 	if ok {
-		return new(big.Float).SetInt(cache)
+		return cache
 	}
 	fact := factorial.Factorial(uint64(n))
-	factorailCache[n] = fact
-	return new(big.Float).SetInt(fact)
+	factStr := fact.String()
+	factInt, _ := new(big.Int).SetString(factStr, 10)
+	factorailCache[n] = factInt
+	return factInt
 }
 
-func getIntensity(volume *big.Float, aht *big.Float, intervalLength *big.Float) *big.Float {
-	return bigMul(volume, bigDiv(aht, intervalLength))
+func getIntensity(volume float64, aht int64, intervalLength int64) float64 {
+	return volume * math.Round((float64(aht)/float64(intervalLength))*10000) / 10000
 }
 
-func getAN(intensity *big.Float, agents *big.Float) *big.Float {
-	return bigfloat.Pow(intensity, agents)
+func getAN(intensity *big.Rat, agents *big.Int) *big.Rat {
+	res := ratioExp(intensity, agents)
+	return res
 }
 
-func getX(AN *big.Float, factorial *big.Float, intensity *big.Float, agents *big.Float) *big.Float {
-	return bigMul(bigDiv(AN, factorial), bigDiv(agents, bigSub(agents, intensity)))
+func getX(AN *big.Rat, factorial *big.Int, intensity float64, agents int64) *big.Rat {
+	agentsCoeff := math.Round((float64(agents)/(float64(agents)-intensity))*10000) / 10000
+	res := new(big.Rat).Quo(AN, new(big.Rat).SetInt(factorial))
+	return new(big.Rat).Mul(res, new(big.Rat).SetFloat64(agentsCoeff))
 }
 
-func getY(intensity *big.Float, agents *big.Float) *big.Float {
-	sum := big.NewFloat(0)
-	n, _ := agents.Int64()
-	for i := int64(0); i < n; i++ {
+func getY(intensity *big.Rat, agents int64) *big.Rat {
+	sum := new(big.Rat)
+	for i := int64(0); i < agents; i++ {
 		iFact := getFactorialSwing(i)
-		aPowI := bigfloat.Pow(intensity, new(big.Float).SetInt64(i))
-		sum = bigAdd(sum, bigDiv(aPowI, iFact))
+		aPowI := ratioExp(intensity, big.NewInt(i))
+		div := new(big.Rat).Quo(aPowI, new(big.Rat).SetInt(iFact))
+		sum = div.Add(sum, div)
 	}
 	return sum
 }
 
-func getPW(X *big.Float, Y *big.Float) *big.Float {
+func getPW(X *big.Rat, Y *big.Rat) float64 {
 	YX := Y.Add(Y, X)
-	return X.Quo(X, YX)
+	res, _ := X.Quo(X, YX).Float64()
+	return res
 }
 
-func getErlangC(AN *big.Float, factorial *big.Float, intensity *big.Float, agents *big.Float) *big.Float {
+func getErlangC(AN *big.Rat, factorial *big.Int, intensity float64, agents int64) float64 {
 	X := getX(AN, factorial, intensity, agents)
-	Y := getY(intensity, agents)
+	Y := getY(new(big.Rat).SetFloat64(intensity), agents)
 	PW := getPW(X, Y)
 	return PW
 }
 
 func getServiceLevel(
-	erlangC *big.Float,
-	intensity *big.Float,
-	agents *big.Float,
-	targetTime *big.Float,
-	aht *big.Float,
-) *big.Float {
-
-	targetTimeToAht := bigDiv(targetTime, aht)
-	agentsSubInt := bigSub(agents, intensity)
-	expInput := bigMul(bigMul(agentsSubInt, targetTimeToAht), big.NewFloat(-1))
-
-	exp := bigfloat.Exp(expInput)
-	erlangCMul := bigMul(erlangC, exp)
-	return new(big.Float).Sub(big.NewFloat(1), erlangCMul)
-	// return (
-	//   // 1 - erlangC.times(Math.exp(-(agents - intensity) * (targetTime / aht)))
-	// );
+	erlangC float64,
+	intensity float64,
+	agents int64,
+	targetTime int64,
+	aht int64,
+) float64 {
+	targetTimeToAht := float64(targetTime) / float64(aht)
+	agentsSubInt := float64(agents) - intensity
+	expInput := float64(agentsSubInt) * targetTimeToAht * -1
+	exp := math.Exp(expInput)
+	erlangCMul := erlangC * exp
+	return 1 - erlangCMul
 }
 
-func getFullServiceLevel(intensity *big.Float, agents *big.Float, targetTime *big.Float, aht *big.Float) *big.Float {
-	n, _ := agents.Int64()
-	factorial := getFactorialSwing(n)
-	AN := getAN(intensity, agents)
+func getFullServiceLevel(intensity float64, agents int64, targetTime int64, aht int64) float64 {
+	factorial := getFactorialSwing(agents)
+	bigInensity := new(big.Rat).SetFloat64(intensity)
+	AN := getAN(bigInensity, big.NewInt(agents))
 	erlangC := getErlangC(AN, factorial, intensity, agents)
 	serviceLevel := getServiceLevel(
 		erlangC,
@@ -113,11 +106,11 @@ func getFullServiceLevel(intensity *big.Float, agents *big.Float, targetTime *bi
 	return serviceLevel
 }
 
-func checkMaxOccupancy(intensity *big.Float, agents *big.Float, maxOccupancy *big.Float) *big.Float {
-	occupancy := bigDiv(intensity, agents)
-	for occupancy.Cmp(maxOccupancy) == 0 || occupancy.Cmp(maxOccupancy) == 1 {
-		agents.Add(agents, big.NewFloat(1.0))
-		occupancy = bigDiv(intensity, agents)
+func checkMaxOccupancy(intensity float64, agents int64, maxOccupancy float64) int64 {
+	occupancy := intensity / float64(agents)
+	for occupancy >= maxOccupancy {
+		agents++
+		occupancy = intensity / float64(agents)
 	}
 	return agents
 }
@@ -149,32 +142,22 @@ func GetNumberOfAgents(fteParams FteParams) FteResult {
 			Volume: 2,
 		}
 	}
-	volume := new(big.Float).SetFloat64(fteParams.Volume)
-	intervalLength := new(big.Float).SetInt64(fteParams.IntervalLength)
-	aht := new(big.Float).SetInt64(fteParams.Aht)
-	targetServiceLevel := new(big.Float).SetFloat64(fteParams.TargetServiceLevel)
-	targetTime := new(big.Float).SetInt64(fteParams.TargetTime)
-	maxOccupancy := new(big.Float).SetFloat64(fteParams.MaxOccupancy)
 
-	intensity := getIntensity(volume, aht, intervalLength)
-	intensityRounded, _ := new(big.Float).Add(intensity, new(big.Float).SetFloat64(0.5)).Int(nil)
-	agents := new(big.Float).SetInt(intensityRounded)
-	agents = agents.Add(agents, new(big.Float).SetInt64(1))
+	intensity := getIntensity(fteParams.Volume, fteParams.Aht, fteParams.IntervalLength)
+	agents := int64(math.Floor(intensity + 1))
 
-	for getFullServiceLevel(intensity, agents, targetTime, aht).Cmp(targetServiceLevel) == -1 {
-		agents.Add(agents, big.NewFloat(1.0))
+	for getFullServiceLevel(intensity, agents, fteParams.TargetTime, fteParams.Aht) < fteParams.TargetServiceLevel {
+		agents++
 	}
 
 	if fteParams.MaxOccupancy > 0 {
-		agents = checkMaxOccupancy(intensity, agents, maxOccupancy)
+		agents = checkMaxOccupancy(intensity, agents, fteParams.MaxOccupancy)
 	}
-
-	agentsInt, _ := new(big.Float).Add(agents, new(big.Float).SetFloat64(0.5)).Int64()
 
 	if fteParams.Shrinkage == 1 {
 		fteParams.Shrinkage = 0.99999
 	}
-	agentsInt = int64(math.Ceil(float64(agentsInt) / (1 - fteParams.Shrinkage)))
+	agentsInt := int64(math.Ceil(float64(agents) / (1 - fteParams.Shrinkage)))
 
 	return FteResult{
 		ID:     fteParams.ID,
