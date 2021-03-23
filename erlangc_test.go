@@ -18,7 +18,7 @@ func TestIntensity(t *testing.T) {
 	aht := int64(600)
 
 	intensity := getIntensity(volume, aht, intervalLength)
-	expected := 8.040000
+	expected := 8.000400
 	if intensity != expected {
 		t.Errorf("intensity should be %f, got %f", expected, intensity)
 	}
@@ -28,7 +28,7 @@ func TestIntensity(t *testing.T) {
 	aht = int64(600)
 
 	intensity = getIntensity(volume, aht, intervalLength)
-	expected = 2606.300000
+	expected = 2593.463000
 	if intensity != expected {
 		t.Errorf("intensity should be %f, got %f", expected, intensity)
 	}

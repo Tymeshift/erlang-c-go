@@ -38,7 +38,7 @@ func getFactorialSwing(n int64) *big.Int {
 }
 
 func getIntensity(volume float64, aht int64, intervalLength int64) float64 {
-	return volume * math.Round((float64(aht)/float64(intervalLength))*100) / 100
+	return volume * math.Round((float64(aht)/float64(intervalLength))*10000) / 10000
 }
 
 func getAN(intensity *big.Rat, agents *big.Int) *big.Rat {
@@ -47,7 +47,7 @@ func getAN(intensity *big.Rat, agents *big.Int) *big.Rat {
 }
 
 func getX(AN *big.Rat, factorial *big.Int, intensity float64, agents int64) *big.Rat {
-	agentsCoeff := math.Round((float64(agents)/(float64(agents)-intensity))*100) / 100
+	agentsCoeff := math.Round((float64(agents)/(float64(agents)-intensity))*10000) / 10000
 	res := new(big.Rat).Quo(AN, new(big.Rat).SetInt(factorial))
 	return new(big.Rat).Mul(res, new(big.Rat).SetFloat64(agentsCoeff))
 }
@@ -143,13 +143,10 @@ func GetNumberOfAgents(fteParams FteParams) FteResult {
 		}
 	}
 
-	intensity := math.Round(getIntensity(fteParams.Volume, fteParams.Aht, fteParams.IntervalLength)*100) / 100
+	intensity := getIntensity(fteParams.Volume, fteParams.Aht, fteParams.IntervalLength)
 	agents := int64(math.Floor(intensity + 1))
 
-	s := 0.0
-
-	for s < fteParams.TargetServiceLevel {
-		s = getFullServiceLevel(intensity, agents, fteParams.TargetTime, fteParams.Aht)
+	for getFullServiceLevel(intensity, agents, fteParams.TargetTime, fteParams.Aht) < fteParams.TargetServiceLevel {
 		agents++
 	}
 
