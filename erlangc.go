@@ -4,12 +4,12 @@ import (
 	"math"
 	"sync"
 
-	big "github.com/ncw/gmp"
-
 	"github.com/Tymeshift/erlang-c-go/factorial"
+	big "github.com/ncw/gmp"
 )
 
-var factorailCache map[int64]*big.Int = make(map[int64]*big.Int)
+var factorailCache = make(map[int64]*big.Int)
+var factorailCacheMutex = &sync.RWMutex{}
 
 func ratioExp(x *big.Rat, y *big.Int) *big.Rat {
 	num := x.Num()
@@ -26,14 +26,18 @@ func getFactorial(n int64) big.Int {
 }
 
 func getFactorialSwing(n int64) *big.Int {
+	factorailCacheMutex.RLock()
 	cache, ok := factorailCache[n]
+	factorailCacheMutex.RUnlock()
 	if ok {
 		return cache
 	}
 	fact := factorial.Factorial(uint64(n))
 	factStr := fact.String()
 	factInt, _ := new(big.Int).SetString(factStr, 10)
+	factorailCacheMutex.Lock()
 	factorailCache[n] = factInt
+	factorailCacheMutex.Unlock()
 	return factInt
 }
 
