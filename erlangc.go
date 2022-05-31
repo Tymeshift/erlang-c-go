@@ -110,7 +110,7 @@ func getFullServiceLevel(intensity float64, agents int64, targetTime int64, aht 
 	return serviceLevel
 }
 
-func checkMaxOccupancy(intensity float64, agents int64, maxOccupancy float64) int64 {
+func CheckMaxOccupancy(intensity float64, agents int64, maxOccupancy float64) int64 {
 	occupancy := intensity / float64(agents)
 	for occupancy >= maxOccupancy {
 		agents++
@@ -155,7 +155,7 @@ func GetNumberOfAgents(fteParams FteParams) FteResult {
 	}
 
 	if fteParams.MaxOccupancy > 0 {
-		agents = checkMaxOccupancy(intensity, agents, fteParams.MaxOccupancy)
+		agents = CheckMaxOccupancy(intensity, agents, fteParams.MaxOccupancy)
 	}
 
 	if fteParams.Shrinkage == 1 {
