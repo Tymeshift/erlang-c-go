@@ -8,6 +8,25 @@ import (
 	big "github.com/ncw/gmp"
 )
 
+// FteParams - parameters to calculate FTE
+type FteParams struct {
+	ID                 string
+	Index              int64
+	Volume             float64
+	IntervalLength     int64
+	Aht                int64
+	TargetServiceLevel float64
+	TargetTime         int64
+	MaxOccupancy       float64
+	Shrinkage          float64
+}
+
+type FteResult struct {
+	ID     string
+	Index  int64
+	Volume int64
+}
+
 var factorailCache = make(map[int64]*big.Int)
 var factorailCacheMutex = &sync.RWMutex{}
 
@@ -119,34 +138,14 @@ func CheckMaxOccupancy(intensity float64, agents int64, maxOccupancy float64) in
 	return agents
 }
 
-// FteParams - parameters to calculate FTE
-type FteParams struct {
-	ID                 string
-	Index              int64
-	Volume             float64
-	IntervalLength     int64
-	Aht                int64
-	TargetServiceLevel float64
-	TargetTime         int64
-	MaxOccupancy       float64
-	Shrinkage          float64
-}
-
-type FteResult struct {
-	ID     string
-	Index  int64
-	Volume int64
-}
-
-func GetNumberOfAgents(fteParams FteParams) FteResult {
-	if fteParams.Volume < 0 || fteParams.Aht < 0 {
-		return FteResult{
-			ID:     fteParams.ID,
-			Index:  fteParams.Index,
-			Volume: 2,
-		}
+func ApplyShrinkage(agents int64, shrinkage float64) int64 {
+	if shrinkage >= 1 {
+		shrinkage = 0.99
 	}
+	return int64(math.Ceil(float64(agents) / (1 - shrinkage)))
+}
 
+func getAgentsWithServiceLevel(fteParams FteParams) (float64, int64) {
 	intensity := getIntensity(fteParams.Volume, fteParams.Aht, fteParams.IntervalLength)
 	agents := int64(math.Floor(intensity + 1))
 
@@ -154,14 +153,24 @@ func GetNumberOfAgents(fteParams FteParams) FteResult {
 		agents++
 	}
 
+	return intensity, agents
+}
+
+func GetNumberOfAgents(fteParams FteParams) FteResult {
+	var intensity float64
+	var agents int64
+	if fteParams.Volume < 0 || fteParams.Aht <= 0 {
+		intensity = 0
+		agents = 1
+	} else {
+		intensity, agents = getAgentsWithServiceLevel(fteParams)
+	}
+
 	if fteParams.MaxOccupancy > 0 {
 		agents = CheckMaxOccupancy(intensity, agents, fteParams.MaxOccupancy)
 	}
 
-	if fteParams.Shrinkage == 1 {
-		fteParams.Shrinkage = 0.99999
-	}
-	agentsInt := int64(math.Ceil(float64(agents) / (1 - fteParams.Shrinkage)))
+	agentsInt := ApplyShrinkage(agents, fteParams.Shrinkage)
 
 	return FteResult{
 		ID:     fteParams.ID,

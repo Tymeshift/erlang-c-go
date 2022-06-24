@@ -95,19 +95,6 @@ func TestGetPW(t *testing.T) {
 	if math.Round(res*100000)/100000 != expected {
 		t.Errorf("PW should be %f, got %f", expected, res)
 	}
-
-	intensity := 2606.300000
-	agents := int64(2700)
-	anBig := getAN(new(big.Rat).SetFloat64(intensity), big.NewInt(agents))
-	factBig := getFactorialSwing(agents)
-
-	XBig := getX(anBig, factBig, intensity, agents)
-	YBig := getY(new(big.Rat).SetFloat64(intensity), agents)
-	res = getPW(XBig, YBig)
-	expected = 0.0415760
-	if math.Round(res*100000)/100000 != math.Round(expected*100000)/100000 {
-		t.Errorf("PW should be %f, got %f", expected, res)
-	}
 }
 
 func BenchmarkGetPW(b *testing.B) {
@@ -437,6 +424,101 @@ func TestCalculateFte(t *testing.T) {
 		Aht:                29400,
 		TargetServiceLevel: 0.8,
 		TargetTime:         14400,
+	})
+
+	if num.Volume != answer {
+		t.Errorf("CalculateFte with %f volume = %d; want %d", volume, num.Volume, answer)
+	}
+
+	// non-zero volume, zero aht, zero shrinkage
+	volume = 5000
+	answer = int64(1)
+	num = GetNumberOfAgents(FteParams{
+		ID:                 "1",
+		Index:              0,
+		Volume:             volume,
+		IntervalLength:     900,
+		MaxOccupancy:       0,
+		Shrinkage:          0,
+		Aht:                0,
+		TargetServiceLevel: 0.8,
+		TargetTime:         60,
+	})
+
+	if num.Volume != answer {
+		t.Errorf("CalculateFte with %f volume = %d; want %d", volume, num.Volume, answer)
+	}
+
+	// zero volume, zero shrinkage
+	volume = 0
+	answer = int64(1)
+	num = GetNumberOfAgents(FteParams{
+		ID:                 "1",
+		Index:              0,
+		Volume:             volume,
+		IntervalLength:     900,
+		MaxOccupancy:       0,
+		Shrinkage:          0,
+		Aht:                300,
+		TargetServiceLevel: 0.8,
+		TargetTime:         60,
+	})
+
+	if num.Volume != answer {
+		t.Errorf("CalculateFte with %f volume = %d; want %d", volume, num.Volume, answer)
+	}
+
+	// zero volume, non-zero shrinkage
+	volume = 0
+	answer = int64(2)
+	num = GetNumberOfAgents(FteParams{
+		ID:                 "1",
+		Index:              0,
+		Volume:             volume,
+		IntervalLength:     900,
+		MaxOccupancy:       0.8,
+		Shrinkage:          0.5,
+		Aht:                300,
+		TargetServiceLevel: 0.8,
+		TargetTime:         60,
+	})
+
+	if num.Volume != answer {
+		t.Errorf("CalculateFte with %f volume = %d; want %d", volume, num.Volume, answer)
+	}
+
+	// negative volume, non-zero shrinkage
+	volume = 0
+	answer = int64(2)
+	num = GetNumberOfAgents(FteParams{
+		ID:                 "1",
+		Index:              0,
+		Volume:             volume,
+		IntervalLength:     900,
+		MaxOccupancy:       0.8,
+		Shrinkage:          0.5,
+		Aht:                300,
+		TargetServiceLevel: 0.8,
+		TargetTime:         60,
+	})
+
+	if num.Volume != answer {
+		t.Errorf("CalculateFte with %f volume = %d; want %d", volume, num.Volume, answer)
+	}
+
+	// negative volume, zero shrinkage
+	volume = 0
+	answer = int64(1)
+	num = GetNumberOfAgents(FteParams{
+		ID:                 "1",
+		Index:              0,
+		Volume:             volume,
+		IntervalLength:     900,
+		MaxOccupancy:       0,
+		Shrinkage:          0,
+		Aht:                300,
+		TargetServiceLevel: 0.8,
+		TargetTime:         60,
 	})
 
 	if num.Volume != answer {
