@@ -12,6 +12,7 @@ import (
 type FteParams struct {
 	ID                 string
 	Index              int64
+	Timestamp          int64
 	Volume             float64
 	IntervalLength     int64
 	Aht                int64
@@ -22,9 +23,10 @@ type FteParams struct {
 }
 
 type FteResult struct {
-	ID     string
-	Index  int64
-	Volume int64
+	ID        string
+	Index     int64
+	Timestamp int64
+	Volume    int64
 }
 
 var factorailCache = make(map[int64]*big.Int)
@@ -173,9 +175,10 @@ func GetNumberOfAgents(fteParams FteParams) FteResult {
 	agentsInt := ApplyShrinkage(agents, fteParams.Shrinkage)
 
 	return FteResult{
-		ID:     fteParams.ID,
-		Index:  fteParams.Index,
-		Volume: agentsInt,
+		ID:        fteParams.ID,
+		Index:     fteParams.Index,
+		Timestamp: fteParams.Timestamp,
+		Volume:    agentsInt,
 	}
 }
 
