@@ -20,6 +20,9 @@ type FteParams struct {
 	TargetTime         int64
 	MaxOccupancy       float64
 	Shrinkage          float64
+	Channel            string
+	MinStaffing        int64
+	Concurrency        int64
 }
 
 type FteResult struct {
