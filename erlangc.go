@@ -134,27 +134,27 @@ func getFullServiceLevel(intensity float64, agents int64, targetTime int64, aht 
 	return serviceLevel
 }
 
-func CheckMaxOccupancy(intensity float64, agents int64, maxOccupancy float64) int64 {
-	occupancy := intensity / float64(agents)
+func CheckMaxOccupancy(intensity float64, agents float64, maxOccupancy float64) float64 {
+	occupancy := intensity / agents
 	for occupancy >= maxOccupancy {
 		agents++
-		occupancy = intensity / float64(agents)
+		occupancy = intensity / agents
 	}
 	return agents
 }
 
-func ApplyShrinkage(agents int64, shrinkage float64) int64 {
+func ApplyShrinkage(agents float64, shrinkage float64) float64 {
 	if shrinkage >= 1 {
 		shrinkage = 0.99
 	}
-	return int64(math.Ceil(float64(agents) / (1 - shrinkage)))
+	return agents / (1 - shrinkage)
 }
 
-func getAgentsWithServiceLevel(fteParams FteParams) (float64, int64) {
+func getAgentsWithServiceLevel(fteParams FteParams) (float64, float64) {
 	intensity := getIntensity(fteParams.Volume, fteParams.Aht, fteParams.IntervalLength)
-	agents := int64(math.Floor(intensity + 1))
+	agents := math.Floor(intensity + 1)
 
-	for getFullServiceLevel(intensity, agents, fteParams.TargetTime, fteParams.Aht) < fteParams.TargetServiceLevel {
+	for getFullServiceLevel(intensity, int64(agents), fteParams.TargetTime, fteParams.Aht) < fteParams.TargetServiceLevel {
 		agents++
 	}
 
@@ -163,7 +163,7 @@ func getAgentsWithServiceLevel(fteParams FteParams) (float64, int64) {
 
 func GetNumberOfAgents(fteParams FteParams) FteResult {
 	var intensity float64
-	var agents int64
+	var agents float64
 	if fteParams.Volume < 0 || fteParams.Aht <= 0 {
 		intensity = 0
 		agents = 1
@@ -175,7 +175,9 @@ func GetNumberOfAgents(fteParams FteParams) FteResult {
 		agents = CheckMaxOccupancy(intensity, agents, fteParams.MaxOccupancy)
 	}
 
-	agentsInt := ApplyShrinkage(agents, fteParams.Shrinkage)
+	agents = ApplyShrinkage(agents, fteParams.Shrinkage)
+
+	agentsInt := int64(math.Ceil(agents))
 
 	return FteResult{
 		ID:        fteParams.ID,
